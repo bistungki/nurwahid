@@ -1,0 +1,43 @@
+version: '3.3'
+networks:
+  mynet:
+    name: mynet
+    driver: bridge
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password --sql-mode=""
+    restart: always
+    networks:
+      - mynet
+    environment:
+      MYSQL_ROOT_PASSWORD: "p2it"
+      MYSQL_USER: user1
+      MYSQL_PASSWORD: "p2it"
+      MYSQL_DATABASE: dbp2it
+      MYSQL_TCP_PORT: 3308
+      MYSQL_UNIX_PORT: 3308
+    expose:
+      - 3308
+    ports:
+      - 3308:3306
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - ./db/data/:/var/lib/mysql
+  p2it:
+    container_name: p2it
+    image: p2it:latest
+    restart: always
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: user1
+      MYSQL_PASSWORD: "p2it"
+      MYSQL_DATABASE: dbp2it
+      MYSQL_PORT: 3308
+    networks:
+      - mynet
+    ports:
+      - 7001:7001
+    depends_on:
+      - 'mysql'
